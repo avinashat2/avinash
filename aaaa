@@ -1,0 +1,96 @@
+from django.db.models import query
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework.views import APIView
+from.models import User,Product
+from.serializers import UserSerializer,ProductSerializer, UserloginSerializer
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate,login,logout
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import action
+
+# Create your views here.
+
+
+class UserViewSet(viewsets.ModelViewSet):
+
+    queryset=User.objects.all()
+    serializer_class=UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        username=request.data.get('username')
+        password=request.data.get('password')
+
+        user=User.objects.create_user(username=username,password=password)
+        return Response(UserSerializer(user).data)
+
+    # @action(detail=True, methods=['post'], url_path='log-in', url_name='login')
+    # def log_in(self,request,*args,**kwargs):
+    #     username=request.data.get('username')
+    #     password=request.data.get('password')
+    #     user=authenticate(username=username,password=password)
+    #     if user is not None:
+    #         login(request,user)
+    #         return Response({"msg":"logged in"})
+
+
+
+
+class ProductViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    queryset=Product.objects.all()
+    serializer_class=ProductSerializer
+
+
+class LoginAPI(viewsets.ModelViewSet):
+    # queryset=Product.objects.all()
+    serializer_class=UserloginSerializer
+
+    def get_queryset(self):
+        pass
+
+
+
+    def create(self, request, *args, **kwargs):    
+        username=request.data.get('username')
+        password=request.data.get('password')
+        user=authenticate(username=username,password=password)
+        if user is not None:
+            login(request,user)
+            print(user) 
+            try:
+                token=Token.objects.get(user=user)
+            except:
+                token=Token.objects.create(user=user)
+            data=UserSerializer(user).data
+            data["token"]=token.key
+            return Response(data,status=status.HTTP_202_ACCEPTED)
+        return Response({"MSG":"somthing went wrong"})
+    
+
+    @action(detail=True, methods=['get'], url_path='logout', url_name='login')
+    def logout(self,request,*args,**kwargs):
+        username=request.data.get('username')
+        password=request.data.get('password')
+        user=authenticate(username=username,password=password)
+        if user is not None:
+            login(request,user)
+            return Response({"msg":"logged in"})
+
+
+
+
+class LogoutAPI(APIView):
+    def get(self, request, *args, **kwargs):
+        id=request.user
+        print("" , id)
+        
+        # token=Token.objects.get(user_id=id)
+        # print(token)
+        # logout(request)
+        return Response({"msg":"No User found"})
+
+
+            
