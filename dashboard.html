@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+
+{% block style %}
+.login-block{
+    float:left;
+    width:100%;
+    padding : 50px 0;
+    }
+{% endblock style %}
+
+
+{% block body %} 
+<br>
+{% if contactusmessages %}
+
+    {% for message in contactusmessages %}
+        <div class="container bg-info">
+            <p>Name : {{message.name}}</p>
+            <p>Email : {{message.email}}</p>
+            <p>Subject : {{message.subject}}</p>
+            <p>Message : {{message.content | truncatechars:100}}</p>
+            <p>date : {{message.contact_date}}</p>
+            
+            {% if message.repl == '1' %}
+            <p>date : {{message.contact_date}}</p>
+            <a href="#"> <button type="button" class="btn btn-danger">Already Replied</button> </a>
+            {% endif %}
+            <a href="{% url 'reply' message.id %}"> <button type="button" class="btn btn-danger">Reply</button> </a>
+
+
+        </div><br>
+    {% endfor %}
+
+
+{% endif %}
+
+
+
+
+
+{% endblock body %}

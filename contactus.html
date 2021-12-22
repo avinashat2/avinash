@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block style %}
+.login-block{
+    float:left;
+    width:100%;
+    padding : 50px 0;
+    }
+    
+
+{% endblock style %}
+
+
+
+{% block body %}
+
+
+<br>
+
+
+<section class="login-block">
+    <div class="container">
+	<div class="row ">
+		<div class="col login-sec">
+		    <h2 class="text-center">Contact Us</h2>
+<form action="{% url 'contactus' %}" method='POST'>
+    {% csrf_token %}
+  <div class="form-group">
+    <label for='name' class="text-uppercase">Name</label>
+    <input type="text" name='name' class="form-control" required  autocomplete="off"/>
+    
+  </div>
+  <div class="form-group">
+    <label for='email' class="text-uppercase">Email</label>
+    <input type="email" name='email' class="form-control" required  autocomplete="off"/>
+  </div>
+  <div class="form-group">
+    <label for='subject' class="text-uppercase">Subject</label>
+    <input type="text" name='subject' class="form-control" required  autocomplete="off"/>
+  </div>
+  <div class="form-group">
+    <label for='content' class="text-uppercase">Message</label><br>
+    <textarea type="text" name='content' rows="10" cols="117" required  autocomplete="off"></textarea>
+  </div>
+  
+
+    <button type="submit" class="btn ">Submit</button>
+  </div>
+  
+</form>
+  </div>
+    </div>
+    </div>
+</section>
+
+
+
+{% endblock body %}

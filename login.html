@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}logIn{% endblock title %}
+
+{% block style %}
+.login-block{
+    float:left;
+    width:100%;
+    padding : 50px 0;
+    }
+    
+    
+{% endblock style %}
+
+{% block body %}
+
+<br>
+
+
+<section class="login-block">
+    <div class="container">
+	<div class="row ">
+		<div class="col login-sec">
+		    <h2 class="text-center">Login Now</h2>
+<form action="{% url 'login' %}" method='POST'>
+    {% csrf_token %}
+  <div class="form-group">
+    <label for='username' class="text-uppercase">Username</label>
+    <input type="text" name='username' class="form-control" required  autocomplete="off"/>
+    
+  </div>
+  <div class="form-group">
+    <label for="password" class="text-uppercase">Password</label>
+    <input type="password" name='password' class="form-control" required  autocomplete="off"/>
+  </div>
+  
+
+    <button type="submit" class="btn ">Submit</button>
+  </div>
+  
+</form>
+  </div>
+    </div>
+    </div>
+</section>
+
+
+
+{% endblock body %}

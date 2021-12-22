@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block style %}
+.login-block{
+    float:left;
+    width:100%;
+    padding : 50px 0;
+    }
+    
+{% endblock style %}
+
+{% block body %}
+
+<div class="container">
+
+    <div class="container bg-info">
+        <p>Name : {{contactmesage.name}}</p>
+        <p>Email : {{contactmesage.email}}</p>
+        <p>Subject : {{contactmesage.subject}}</p>
+        <p>Message : {{contactmesage.content }}</p>
+        <p>date : {{contactmesage.contact_date}}</p>   
+    </div><br><br>
+    
+    {% if replymessages %}
+    <div class="container">
+        <h4>Already Replied :</h4><br>
+        {% for message in replymessages %}
+        <div class="container bg-info">
+            <p>Email : {{message.email}}</p>
+            <p>Response : {{message.reply}} <br>On. {{message.reply_date}}</p>
+        </div>
+
+        {% endfor %}
+    </div>
+    {% endif %} 
+
+
+    <h3>Do Reply here :</h3><br>
+    <div class="container">
+        <form action="{% url 'reply' contactmesage.id %}" method='POST'>
+            {% csrf_token %}
+            <div class="form-group">
+                <label for='email' class="text-uppercase">Email</label>
+                <input type="text" name='email' value="{{contactmesage.email}}" class="form-control" required  autocomplete="off"/>
+            </div>
+            <div class="form-group">
+                <label for='reply' class="text-uppercase">Message</label><br>
+                <textarea type="text" name='reply' rows="10" cols="117" required  autocomplete="off"></textarea>
+            </div>
+            <button type="submit" class="btn ">Submit</button>
+
+        </form>
+    </div>
+
+
+
+</div>
+
+
+{% endblock body %}

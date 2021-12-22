@@ -1,87 +1,73 @@
-from django.shortcuts import render
-
-# Create your views here.
-from django.core.checks import messages
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
-from .serializers import UserSerializer
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.contrib.auth import login,logout,authenticate
-from rest_framework.authentication import  BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import authenticate,login,logout
+from django.contrib import messages
+from . models import ContactUsmodel, ReplyModel
+from datetime import datetime
+from django.urls import reverse
+# Create your views here.
 
+def Index(request):
+    return render(request,'index.html')
 
-class UserdetailsAPI(APIView):
-    authentication_classes = [BasicAuthentication]
-    permission_classes = [IsAuthenticated]
-    def get(self, request, *args, **kwargs):
-        user = User.objects.all()
-        data = UserSerializer(user, many=True).data
-        return Response({"data": data})
-
-    def post(self, request, *args, **kwargs):
-        if User.objects.filter(username=request.data.get('username')).exists():
-            return Response({"msg": "This useername is alredy taken Choose other "})
-        data = UserSerializer(data=request.data, many=True)
-        username = request.data.get('username')
-        password = request.data.get('password')
-        User.objects.create_user(username=username, password=password)
-        return Response({"msg": "User created Success "})
-
-    def put(self, request, *args, **kwargs):
-        # print(request.data)
-        if User.objects.filter(username=request.data.get('username')).exists():
-            user = User.objects.get(username=request.data.get('username'))
-            # print(user)
-            serializer = UserSerializer(user, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({"msg": "Details updated Successfully !"})
-            return Response({"msg": "Invalid data"})
-        return Response({"msg": "no user found on this username !"})
-
-
-
-    def patch(self, request, *args, **kwargs):
-        if User.objects.filter(id=request.data.get('id')).exists():
-            user = User.objects.get(id=request.data.get('id'))
-            serializer = UserSerializer(user, data=request.data,partial = True)
-            if serializer.is_valid():
-                serializer.save()
-                
-                return Response({"data":UserSerializer(user).data,"url":request.path,"status":status.HTTP_200_OK})
-            return Response({"msg": "Invalid data !"})
-        return Response({"msg": "NOo user found on this username !"})
-
-
-class DeleteUserAPI(APIView):
-    authentication_classes = [BasicAuthentication]
-    permission_classes = [IsAuthenticated,]
-
-    def post(self,request,*args,**kwargs):
-        if User.objects.filter(username=request.data.get('username')).exists():
-            user=User.objects.get(username=request.data.get('username'))
-            user.delete()
-            return Response({"msg":"User deleted Success "})
-        return Response({"msg":"No User found ! "})
-    
-            
-
-class LoginAPI(APIView):
-    def post(self,request,*args,**kwargs):
-        username= request.data.get('username')
-        password=request.data.get('password')
+def Loginhandle(request):
+    if request.method=='POST':
+        username=request.POST.get('username')
+        password=request.POST.get('password')
         user=authenticate(username=username,password=password)
         if user is not None:
             login(request,user)
-            return Response({"msg":"logged in Success !"})
-        return Response({"msg":"Invalid details"})
+            messages.success(request,'Logged in Success !')
+            return redirect('index')
+        messages.error(request,'Somthing went wrong !')
+        return redirect('login')
+    return render(request,'login.html')
 
 
-class LogoutAPI(APIView):
-    def get(self,request,*args,**kwargs):
-        if request.user.is_authenticated:
-            logout(request)
-        return Response({"msg":"logout Success !"})
+def Logouthandle(request):
+    logout(request)
+    messages.success(request,'logged out success !')
+    return redirect('index')
+
+
+def ContactUs(request):
+    if request.method=='POST':
+        name=request.POST.get('name')
+        email=request.POST.get('email')
+        subject=request.POST.get('subject')
+        content=request.POST.get('content')
+        contactmessage=ContactUsmodel(name=name,email=email,subject=subject,content=content)
+        contactmessage.save()
+        # print(contactmessage)
+        messages.success(request,'We will get back to you with in 24 hours, Thank you')
+        return redirect('contactus')
+    return render(request,'contactus.html')
+
+
+def Dashboard(request):
+    contacts=ContactUsmodel.objects.all().order_by('-contact_date')
+    print(contacts)
+    # print(contacts)
+
+    return render(request,'dashboard.html',{'contactusmessages':contacts})
+
+
+def Replyhandle(request,id):
+    if request.method=='POST':
+        contactus=id
+        email=request.POST.get('email')
+        reply=request.POST.get('reply')
+        # print(reply)
+        repl=ReplyModel(contactus_id=contactus ,email=email,reply=reply)
+        repl.save()
+        conct=ContactUsmodel(repl="1")
+        conct.save()
+        # print(repl)
+        messages.success(request,'Reply Sent !')
+        # redirect(reverse('readpost', kwargs={"id": id}))
+        return redirect(reverse('reply', kwargs={"id": id}))
+    contactmesage=ContactUsmodel.objects.get(id=id)
+    replymsgs=ReplyModel.objects.filter(contactus_id=id).order_by('-reply_date')
+    return render(request,'reply.html',{'contactmesage':contactmesage,'replymessages':replymsgs })
+
+
